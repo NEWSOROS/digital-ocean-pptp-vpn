@@ -5,7 +5,7 @@ echo "This script will configure PPTP VPN"
 echo "###################################"
 
 # Install PPTP daemon service
-apt-get -y install pptpd
+apt-get -y install pptpd iptables-persistent netfilter-persistent
 
 # Set DNS
 echo "ms-dns 1.1.1.1" >> /etc/ppp/pptpd-options
@@ -29,7 +29,7 @@ read password
 
 # Set user & password
 # Replace $username and $password
-echo "$username    pptpd   $password  *" >> /etc/ppp/chap-secrets
+echo "$username    pptpd   $password  *" > /etc/ppp/chap-secrets
 
 # Restart PPTPD to reload all config
 service pptpd restart
@@ -46,6 +46,9 @@ iptables -A INPUT -p 47 -j ACCEPT
 
 # Save iptable
 iptables-save
+netfilter-persistent save
+netfilter-persistent start
+sudo systemctl enable netfilter-persistent.service
 
 echo "############################"
 echo "PPTP VPN Login Details"
@@ -54,5 +57,5 @@ echo "Your IP is " $ip
 echo "Your username is " $username
 echo "Your password is " $password
 echo "############################"
-
+sudo systemctl status netfilter-persistent.service
 exit
